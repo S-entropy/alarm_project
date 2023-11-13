@@ -2,6 +2,27 @@ import flet as ft
 
 temporary: list[ft.Control] = []
 login_pages: list[ft.Control] = []
+
+class login(ft.UserControl):
+    def __init__(self):
+        super().__init__()
+
+    def build(self):
+        t1 = ft.Container(content=ft.TextField(label='이름/메일 주소'), alignment=ft.alignment.center, width=500)
+        t2 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
+        sb = ft.ElevatedButton(text='Submit', on_click=log_in)
+        return ft.Column(controls=[t1, t2, sb])
+
+class signup(ft.UserControl):
+    def __init__(self):
+        super().__init__()
+
+    def build(self):
+        t1 = ft.Container(content=ft.TextField(label='이름'), alignment=ft.alignment.center, width=500)
+        t2 = ft.Container(content=ft.TextField(label='메일 주소'), alignment=ft.alignment.center, width=500)
+        t3 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
+        sb = ft.ElevatedButton(text='Submit', on_click=sign_up)
+        return ft.Column(controls=[t1, t2, t3, sb])
 def login_signup(page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     is_login = True
@@ -23,22 +44,24 @@ def login_signup(page):
 
             t1 = ft.Container(content= ft.TextField(label='이름/메일 주소'), alignment= ft.alignment.center, width=500)
             t2 = ft.Container(content= ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
-            col = ft.Column(controls=[t1, t2])
+            sb = ft.ElevatedButton(text='Submit', on_click=login)
+            col = ft.Column(controls=[t1, t2, sb])
             sb = ft.ElevatedButton(text='Submit', on_click=login)
 
-            temporary = [col, sb]
-            page.add(col, sb)
+            temporary = [col]
+            page.add(col)
         else:
             page.remove(*temporary)
 
             t1 = ft.Container(content=ft.TextField(label='이름'), alignment=ft.alignment.center, width=500)
             t2 = ft.Container(content=ft.TextField(label='메일 주소'), alignment=ft.alignment.center, width=500)
             t3 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
-            col = ft.Column(controls=[t1, t2, t3])
             sb = ft.ElevatedButton(text='Submit', on_click=sign_up)
+            col = ft.Column(controls=[t1, t2, t3, sb])
 
-            temporary = [col, sb]
-            page.add(col, sb)
+
+            temporary = [col]
+            page.add(col)
         page.update()
 
     cg = ft.RadioGroup(content=ft.Column([
