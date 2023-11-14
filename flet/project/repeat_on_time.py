@@ -11,7 +11,7 @@ def test_fuction():
     mail_sender('반복되는 메일은', '개발자를 불안하게 해요')
 
 
-#schedule.every(1).second.do(test_fuction)
+schedule.every(1).second.do(test_fuction)
 schedule.every().day.at("10:10").do(test_fuction)
 
 while True:
