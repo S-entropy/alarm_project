@@ -3,17 +3,16 @@ import flet as ft
 temporary: list[ft.Control] = []
 login_pages: list[ft.Control] = []
 
-class login(ft.UserControl):
+class Login(ft.UserControl):
     def __init__(self):
         super().__init__()
 
     def build(self):
         t1 = ft.Container(content=ft.TextField(label='이름/메일 주소'), alignment=ft.alignment.center, width=500)
         t2 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
-        sb = ft.ElevatedButton(text='Submit', on_click=log_in)
-        return ft.Column(controls=[t1, t2, sb])
+        return ft.Column(controls=[t1, t2])
 
-class signup(ft.UserControl):
+class Signup(ft.UserControl):
     def __init__(self):
         super().__init__()
 
@@ -21,16 +20,15 @@ class signup(ft.UserControl):
         t1 = ft.Container(content=ft.TextField(label='이름'), alignment=ft.alignment.center, width=500)
         t2 = ft.Container(content=ft.TextField(label='메일 주소'), alignment=ft.alignment.center, width=500)
         t3 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
-        sb = ft.ElevatedButton(text='Submit', on_click=sign_up)
-        return ft.Column(controls=[t1, t2, t3, sb])
-def login_signup(page):
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    is_login = True
+        return ft.Column(controls=[t1, t2, t3])
 
+def main(page):
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     def login(e):
         # 이름/메일 주소와 비밀번호가 일치하는지 확인, 일치하면 이하 실행
         page.remove(*login_pages, *temporary)
-        ft.app(target=datas)
+
+
         # 일치하지 않으면 오류 메세지 띄우기
     def sign_up(e):
         # 데이터베이스에 이름, 메일 주소, 비밀번호 추가
@@ -42,24 +40,17 @@ def login_signup(page):
         if is_login == 'true':
             page.remove(*temporary)
 
-            t1 = ft.Container(content= ft.TextField(label='이름/메일 주소'), alignment= ft.alignment.center, width=500)
-            t2 = ft.Container(content= ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
+            logins = Login()
             sb = ft.ElevatedButton(text='Submit', on_click=login)
-            col = ft.Column(controls=[t1, t2, sb])
-            sb = ft.ElevatedButton(text='Submit', on_click=login)
+            col = ft.Column(controls=[logins, sb])
 
             temporary = [col]
             page.add(col)
         else:
             page.remove(*temporary)
-
-            t1 = ft.Container(content=ft.TextField(label='이름'), alignment=ft.alignment.center, width=500)
-            t2 = ft.Container(content=ft.TextField(label='메일 주소'), alignment=ft.alignment.center, width=500)
-            t3 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
+            sign_ups = Signup()
             sb = ft.ElevatedButton(text='Submit', on_click=sign_up)
-            col = ft.Column(controls=[t1, t2, t3, sb])
-
-
+            col = ft.Column(controls=[sign_ups, sb])
             temporary = [col]
             page.add(col)
         page.update()
@@ -72,5 +63,3 @@ def login_signup(page):
 
 def datas(page):
     pass
-
-ft.app(target=login_signup)
