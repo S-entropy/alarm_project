@@ -28,7 +28,6 @@ def main(page):
         # 이름/메일 주소와 비밀번호가 일치하는지 확인, 일치하면 이하 실행
         page.remove(*login_pages, *temporary)
 
-
         # 일치하지 않으면 오류 메세지 띄우기
     def sign_up(e):
         # 데이터베이스에 이름, 메일 주소, 비밀번호 추가
@@ -60,6 +59,4 @@ def main(page):
         ft.Radio(value=False, label="회원가입")]), on_change=radiogroup_changed)
     page.add(cg)
     login_pages.append(cg)
-
-def datas(page):
-    pass
+ft.app(target=main)
