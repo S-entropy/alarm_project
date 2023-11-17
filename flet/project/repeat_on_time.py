@@ -22,7 +22,7 @@ def test_fuction():
     print(now)
     mail_sender('반복되는 메일은', '개발자를 불안하게 해요')
 
-def repeat_alarm(repeat_time, repeat_interval):
+def repeat_times(repeat_time, repeat_interval):
     times = []
     curtime = repeat_time
     for i in range(100):
@@ -30,11 +30,17 @@ def repeat_alarm(repeat_time, repeat_interval):
         curtime = get_added_time(times[-1], repeat_interval)
     return times
 
+def check_date_type(date):
+    return datetime.datetime.today().weekday() == date
 
+def check_date(date):
+    return date == datetime.datetime.now().date()
 
-for alarm_time in repeat_alarm('13:35', 1):
+for alarm_time in repeat_times('13:35', 1):
     schedule.every().day.at(alarm_time).do(test_fuction)
+print(check_date_type(4))
 schedule.every().day.at("13:37").do(test_fuction)
+print(check_date(datetime.date(2023, 11, 17)))
 while True:
     schedule.run_pending()
     time.sleep(1)
