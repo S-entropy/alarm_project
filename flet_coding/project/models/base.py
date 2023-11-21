@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime
 from sqlalchemy.orm import declarative_base
 
-from connect import session
+from flet_coding.project.models.connect import session
 
 Model = declarative_base()
 Model.query = session.query_property() # User.query 사용 가능
