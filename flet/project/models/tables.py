@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date, Time, DateTime
 from sqlalchemy.orm import Relationship
 
-from models.base import TimeStampedModel, Model
+from flet.project.models.base import TimeStampedModel
+
 
 class User(TimeStampedModel):
     __tablename__ = "users"

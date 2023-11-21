@@ -1,4 +1,7 @@
 import flet as ft
+from email_validator import validate_email, EmailNotValidError
+from flet.project.models.tables import User, Alarm, Alarm_repeat
+from flet.project.models.connect import session
 
 temporary: list[ft.Control] = []
 login_pages: list[ft.Control] = []
@@ -24,13 +27,29 @@ class Signup(ft.UserControl):
 
 def main(page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    errors = ft.Text("", size=25, color=ft.colors.RED)
     def login(e):
         # 이름/메일 주소와 비밀번호가 일치하는지 확인, 일치하면 이하 실행
+        log_in = temporary[0].controls[0]
+        name = log_in.controls[0].controls[0].content.value
+        password = log_in.controls[0].controls[1].content.value
+
+
         page.remove(*login_pages, *temporary)
 
         # 일치하지 않으면 오류 메세지 띄우기
     def sign_up(e):
-        # 데이터베이스에 이름, 메일 주소, 비밀번호 추가
+        signup = temporary[0].controls[0]
+        name = signup.controls[0].controls[0].content.value
+        mail = signup.controls[0].controls[1].content.value
+        password = signup.controls[0].controls[2].content.value
+        try:
+            validate_email(mail)
+            user = User(name=name, mail=mail, password=password)
+        except:
+            page.add(errors)
+            errors.value ="email is not valid"
+            errors.update()
         pass
     def radiogroup_changed(e):
         global temporary
@@ -42,7 +61,6 @@ def main(page):
             logins = Login()
             sb = ft.ElevatedButton(text='Submit', on_click=login)
             col = ft.Column(controls=[logins, sb])
-
             temporary = [col]
             page.add(col)
         else:
