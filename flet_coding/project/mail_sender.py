@@ -1,7 +1,10 @@
+from flet_coding.project.models.tables import User, Alarm, Alarm_repeat
+from flet_coding.project.models.connect import session
 import schedule
 import time
 import datetime
 from email_interaction import mail_sender
+
 
 # 스케쥴 모듈이 동작시킬 코드 : 현재 시간 출력
 def get_added_time(time, interval):
@@ -39,12 +42,15 @@ def check_date_type(date):
 def check_date(date):
     return date == datetime.datetime.now().date()
 
-for alarm_time in repeat_times('13:35', 1, 100)[0]:
-    schedule.every().day.at(alarm_time).do(test_fuction)
-if __name__ == '__main__':
-    print(check_date_type(4))
-    schedule.every().day.at("13:37").do(test_fuction)
-    print(check_date(datetime.date(2023, 11, 17)))
+def mail_send():
+    mail_sender('test', 'test')
+
+alarms = Alarm.query.all()
+for alarm in alarms:
+    now = datetime.datetime.now()
+    if now.strftime('%Y-%m-%d') == alarm.alarm_date.strftime('%Y-%m-%d'):
+        print(alarm.alarm_time.strftime('%H:%M:%S'))
+        schedule.every().day.at(alarm.alarm_time.strftime('%H:%M:%S')).do(mail_send)
 
 while True:
     schedule.run_pending()

@@ -2,6 +2,24 @@ import flet as ft
 from email_validator import validate_email, EmailNotValidError
 from flet_coding.project.models.tables import User, Alarm, Alarm_repeat
 from flet_coding.project.models.connect import session
+import datetime
+'''
+users = (User.query \
+            .filter(User.email == 'kibeom0429@gmail.com') \
+            .filter(User.password == '142857')
+         )
+for user in users:
+    print(user.email)
+    user.alarms.append(
+        Alarm(
+            repeat_now=False,
+            repeat_week=False,
+            alarm_date=datetime.date(2023, 11, 24),
+            alarm_time=datetime.time(1, 55)
+        )
+    )
+    session.commit()
+'''
 
 temporary: list[ft.Control] = []
 login_pages: list[ft.Control] = []
@@ -52,6 +70,7 @@ def main(page):
                 page.remove(errors)
             except Exception as e:
                 pass
+
 
         # 일치하지 않으면 오류 메세지 띄우기
     def sign_up(e):
