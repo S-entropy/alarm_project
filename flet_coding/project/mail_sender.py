@@ -40,17 +40,22 @@ def check_date_type(date):
     return datetime.datetime.today().weekday() == date
 
 def check_date(date):
+
     return date == datetime.datetime.now().date()
 
-def mail_send():
-    mail_sender('test', 'test')
+def mail_send(id):
+    alarm = (Alarm.query.filter(Alarm.id == id))
+    alarm = alarm[0]
+    print(alarm.data)
+    mail_sender('test', alarm.data)
 
-alarms = Alarm.query.all()
+alarms = (Alarm.query.all())
 for alarm in alarms:
     now = datetime.datetime.now()
+    #schedule.every().second.do(mail_send, alarm.id)
     if now.strftime('%Y-%m-%d') == alarm.alarm_date.strftime('%Y-%m-%d'):
         print(alarm.alarm_time.strftime('%H:%M:%S'))
-        schedule.every().day.at(alarm.alarm_time.strftime('%H:%M:%S')).do(mail_send)
+        schedule.every().day.at(alarm.alarm_time.strftime('%H:%M:%S')).do(mail_send, alarm.id)
 
 while True:
     schedule.run_pending()

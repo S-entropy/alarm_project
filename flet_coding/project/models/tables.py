@@ -20,6 +20,7 @@ class Alarm(TimeStampedModel):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    data = Column(String(1000), nullable=False)
     repeat_now = Column(Boolean, nullable=False)
     repeat_week = Column(Integer, nullable=False)
     alarm_date = Column(Date, nullable=False)

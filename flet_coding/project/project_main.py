@@ -3,23 +3,23 @@ from email_validator import validate_email, EmailNotValidError
 from flet_coding.project.models.tables import User, Alarm, Alarm_repeat
 from flet_coding.project.models.connect import session
 import datetime
-'''
-users = (User.query \
-            .filter(User.email == 'kibeom0429@gmail.com') \
-            .filter(User.password == '142857')
-         )
-for user in users:
-    print(user.email)
-    user.alarms.append(
-        Alarm(
-            repeat_now=False,
-            repeat_week=False,
-            alarm_date=datetime.date(2023, 11, 24),
-            alarm_time=datetime.time(1, 55)
-        )
-    )
-    session.commit()
-'''
+
+# users = (User.query \
+#             .filter(User.email == 'kibeom0429@gmail.com') \
+#             .filter(User.password == '142857')
+#          )
+# for user in users:
+#     user.alarms.append(
+#         Alarm(
+#             repeat_now=False,
+#             repeat_week=False,
+#             alarm_date=datetime.date(2023, 11, 30),
+#             alarm_time=datetime.time(10, 55),
+#             data='test'
+#         )
+#     )
+#     session.commit()
+
 
 temporary: list[ft.Control] = []
 login_pages: list[ft.Control] = []
@@ -33,6 +33,7 @@ class EmailNotUniqueError(Exception):
 class Login(ft.UserControl):
     def __init__(self):
         super().__init__()
+
 
     def build(self):
         t1 = ft.Container(content=ft.TextField(label='메일 주소'), alignment=ft.alignment.center, width=500)
@@ -48,6 +49,66 @@ class Signup(ft.UserControl):
         t2 = ft.Container(content=ft.TextField(label='메일 주소'), alignment=ft.alignment.center, width=500)
         t3 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
         return ft.Column(controls=[t1, t2, t3])
+
+class UserInfo(ft.UserControl):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
+    def data_change(self, e):
+        user = (User.query.filter(User.id == self.user.id))
+        user = user[0]
+        if e.control.label == '이름':
+            user.name = e.control.value
+        elif e.control.label == '메일 주소':
+            user.email = e.control.value
+        elif e.control.label == '비밀번호':
+            user.password = e.control.value
+        session.commit()
+    def build(self):
+        # on_change 추가
+        t1 = ft.Container(content=ft.TextField(label='이름', value=self.user.name, on_change=self.data_change), alignment=ft.alignment.center, width=150)
+        t2 = ft.Container(content=ft.TextField(label='메일 주소', value=self.user.email, on_change=self.data_change), alignment=ft.alignment.center, width=400)
+        t3 = ft.Container(content=ft.TextField(label='비밀번호', value=self.user.password, on_change=self.data_change), alignment=ft.alignment.center, width=150)
+        #t4 = ft.Container(content=ft.TextField(label='관리자 권한', value=int(self.user.is_admin == 'true')), alignment=ft.alignment.center, width=100)
+        return ft.Row(controls=[t1, t2, t3])
+
+class AlarmInfo(ft.UserControl):
+    def __init__(self, alarm):
+        super().__init__()
+        self.alarm = alarm
+
+    def data_change(self, e):
+        alarm = (Alarm.query.filter(Alarm.user_id == self.alarm.user_id))
+        alarm = alarm[0]
+        if e.control.label == '데이터':
+            alarm.data = e.control.value
+        elif e.control.label == '반복':
+            alarm.repeat_now = int(e.control.value)
+        elif e.control.label == '요일 반복':
+            alarm.repeat_week = e.control.value
+        elif e.control.label == '날짜':
+            v = alarm.alarm_date
+            lis = list(e.control.value.split('-'))
+            alarm.alarm_date = datetime.date(int(lis[0]), int(lis[1]), int(lis[2]))
+        elif e.control.label == '시간':
+            lis = list(e.control.value.split(':')[:2])
+            alarm.alarm_time = datetime.time(int(lis[0]), int(lis[1]))
+        session.commit()
+    def build(self):
+        t0 = ft.Container(content=ft.Text(value=self.alarm.id), alignment=ft.alignment.center, width=50)
+        t1 = ft.Container(content=ft.TextField(label='데이터', value=self.alarm.data, on_change=self.data_change), alignment=ft.alignment.center, width=750)
+        t2 = ft.Container(content=ft.TextField(label='반복', value=str(int(self.alarm.repeat_now == 'true')), on_change=self.data_change), alignment=ft.alignment.center, width=50)
+        t3 = ft.Container(content=ft.TextField(label='요일 반복', value=self.alarm.repeat_week, on_change=self.data_change), alignment=ft.alignment.center, width=100)
+        t4 = ft.Container(content=ft.TextField(label='날짜', value=self.alarm.alarm_date, on_change=self.data_change), alignment=ft.alignment.center, width=250)
+        t5 = ft.Container(content=ft.TextField(label='시간', value=str(self.alarm.alarm_time)[:5], on_change=self.data_change), alignment=ft.alignment.center, width=250)
+        if self.alarm.repeat_now == 'true':
+            repeater = (Alarm_repeat.query.filter(Alarm_repeat.alarm_id == self.alarm.id))
+            repeater = repeater[0]
+            rep = ft.Container(content=ft.TextField(label='반복 시간', value=repeater.repeat_interval))
+
+            return ft.Row(controls=[t0, t2, t3, t4, t5, t1])
+        else:
+            return ft.Row(controls=[t0, t2, t3, t4, t5, t1])
 
 def main(page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
@@ -70,7 +131,16 @@ def main(page):
                 page.remove(errors)
             except Exception as e:
                 pass
-
+            users = (User.query.filter(User.email == mail).filter(User.password == password))
+            user = users[0]
+            col = UserInfo(user)
+            alarms = (Alarm.query.filter(Alarm.user_id == user.id))
+            alarms_contain = [col]
+            for alarm in alarms:
+                alarms_contain.append(AlarmInfo(alarm))
+            for i in alarms_contain:
+                page.add(i)
+            page.update()
 
         # 일치하지 않으면 오류 메세지 띄우기
     def sign_up(e):
