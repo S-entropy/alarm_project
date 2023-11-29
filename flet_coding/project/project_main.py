@@ -47,8 +47,9 @@ class Signup(ft.UserControl):
     def build(self):
         t1 = ft.Container(content=ft.TextField(label='이름'), alignment=ft.alignment.center, width=500)
         t2 = ft.Container(content=ft.TextField(label='메일 주소'), alignment=ft.alignment.center, width=500)
-        t3 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
-        return ft.Column(controls=[t1, t2, t3])
+        t3 = ft.Container(content=ft.TextField(label='메일 키'), alignment=ft.alignment.center, width=500)
+        t4 = ft.Container(content=ft.TextField(label='비밀번호'), alignment=ft.alignment.center, width=500)
+        return ft.Column(controls=[t1, t2, t3, t4])
 
 class UserInfo(ft.UserControl):
     def __init__(self, user):
@@ -63,14 +64,16 @@ class UserInfo(ft.UserControl):
             user.email = e.control.value
         elif e.control.label == '비밀번호':
             user.password = e.control.value
+        elif e.control.label == '메일 키':
+            user.email_key = e.control.value
         session.commit()
     def build(self):
-        # on_change 추가
         t1 = ft.Container(content=ft.TextField(label='이름', value=self.user.name, on_change=self.data_change), alignment=ft.alignment.center, width=150)
-        t2 = ft.Container(content=ft.TextField(label='메일 주소', value=self.user.email, on_change=self.data_change), alignment=ft.alignment.center, width=400)
-        t3 = ft.Container(content=ft.TextField(label='비밀번호', value=self.user.password, on_change=self.data_change), alignment=ft.alignment.center, width=150)
+        t2 = ft.Container(content=ft.TextField(label='메일 주소', value=self.user.email, on_change=self.data_change), alignment=ft.alignment.center, width=300)
+        t3 = ft.Container(content=ft.TextField(label='메일 키', value=self.user.email_key, on_change=self.data_change), alignment=ft.alignment.center, width=200)
+        t4 = ft.Container(content=ft.TextField(label='비밀번호', value=self.user.password, on_change=self.data_change), alignment=ft.alignment.center, width=150)
         #t4 = ft.Container(content=ft.TextField(label='관리자 권한', value=int(self.user.is_admin == 'true')), alignment=ft.alignment.center, width=100)
-        return ft.Row(controls=[t1, t2, t3])
+        return ft.Row(controls=[t1, t2, t3, t4])
 
 class AlarmInfo(ft.UserControl):
     def __init__(self, alarm):
@@ -99,8 +102,8 @@ class AlarmInfo(ft.UserControl):
         t1 = ft.Container(content=ft.TextField(label='데이터', value=self.alarm.data, on_change=self.data_change), alignment=ft.alignment.center, width=750)
         t2 = ft.Container(content=ft.TextField(label='반복', value=str(int(self.alarm.repeat_now == 'true')), on_change=self.data_change), alignment=ft.alignment.center, width=50)
         t3 = ft.Container(content=ft.TextField(label='요일 반복', value=self.alarm.repeat_week, on_change=self.data_change), alignment=ft.alignment.center, width=100)
-        t4 = ft.Container(content=ft.TextField(label='날짜', value=self.alarm.alarm_date, on_change=self.data_change), alignment=ft.alignment.center, width=250)
-        t5 = ft.Container(content=ft.TextField(label='시간', value=str(self.alarm.alarm_time)[:5], on_change=self.data_change), alignment=ft.alignment.center, width=250)
+        t4 = ft.Container(content=ft.TextField(label='날짜', value=self.alarm.alarm_date, on_change=self.data_change), alignment=ft.alignment.center, width=150)
+        t5 = ft.Container(content=ft.TextField(label='시간', value=str(self.alarm.alarm_time)[:5], on_change=self.data_change), alignment=ft.alignment.center, width=75)
         if self.alarm.repeat_now == 'true':
             repeater = (Alarm_repeat.query.filter(Alarm_repeat.alarm_id == self.alarm.id))
             repeater = repeater[0]
@@ -133,13 +136,21 @@ def main(page):
                 pass
             users = (User.query.filter(User.email == mail).filter(User.password == password))
             user = users[0]
-            col = UserInfo(user)
-            alarms = (Alarm.query.filter(Alarm.user_id == user.id))
-            alarms_contain = [col]
-            for alarm in alarms:
-                alarms_contain.append(AlarmInfo(alarm))
-            for i in alarms_contain:
-                page.add(i)
+            if user.is_admin == 0:
+                users = [user]
+            else:
+                users = (User.query.all())
+            for user in users:
+                user_name = ft.Text(value=f'{user.name} INFO')
+                col = UserInfo(user)
+                alarms = (Alarm.query.filter(Alarm.user_id == user.id))
+                alarm_name = ft.Text(value=f'{user.name}\'s Alarm INFO')
+                alarms_contain = [user_name, col, alarm_name]
+                for alarm in alarms:
+                    alarms_contain.append(AlarmInfo(alarm))
+                for i in alarms_contain:
+                    page.add(i)
+                page.add(ft.Divider())
             page.update()
 
         # 일치하지 않으면 오류 메세지 띄우기
@@ -147,17 +158,19 @@ def main(page):
         signup = temporary[0].controls[0]
         name = signup.controls[0].controls[0].content.value
         mail = signup.controls[0].controls[1].content.value
-        password = signup.controls[0].controls[2].content.value
+        mail_key = signup.controls[0].controls[2].content.value
+        password = signup.controls[0].controls[3].content.value
         try:
             validate_email(mail)
             unique_check = User.query.filter(User.email == mail)
             if len(list(unique_check)):
+                # 아래와 같이 이름과 비밀번호를 입력하면 admin 권한을 부여함.
                 if name == 'admin_get' and password == '142857':
                     user = User.query.filter(User.email == mail).update({"is_admin" : True})
                     session.commit()
                 raise EmailNotUniqueError
             errors.value = ''
-            user = User(name=name, email=mail, password=password, is_admin=False)
+            user = User(name=name, email=mail, email_key=mail_key, password=password, is_admin=False)
             session.add(user)
             session.commit()
         except EmailNotValidError:
@@ -176,7 +189,12 @@ def main(page):
         #t.value = is_login
 
         if is_login == 'true':
-            page.remove(*temporary)
+            for i in temporary:
+                try:
+                    page.remove(i)
+                except Exception as e:
+                    temporary = []
+                    pass
             try:
                 page.remove(errors)
             except Exception as e:
@@ -187,12 +205,21 @@ def main(page):
             temporary = [col]
             page.add(col)
         else:
-            page.remove(*temporary)
+            for i in temporary:
+                try:
+                    page.remove(i)
+                except Exception as e:
+                    temporary = []
+                    pass
             try:
                 page.remove(errors)
             except Exception as e:
                 pass
-            page.remove(*temporary)
+            for i in temporary:
+                try:
+                    page.remove(i)
+                except Exception as e:
+                    pass
             sign_ups = Signup()
             sb = ft.ElevatedButton(text='Submit', on_click=sign_up)
             col = ft.Column(controls=[sign_ups, sb])

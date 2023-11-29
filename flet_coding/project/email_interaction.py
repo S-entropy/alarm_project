@@ -2,8 +2,11 @@ import smtplib, imaplib
 from email.mime.text import MIMEText
 import email
 from email.header import decode_header, make_header
-
-def mail_sender(subject, msg):
+import datetime
+import time
+from flet_coding.project.models.tables import User, Alarm, Alarm_repeat
+from flet_coding.project.models.connect import session
+def mail_sender(email, key, subject, msg):
     # smtplib.SMTP('사용할 SMTP 서버의 URL', PORT)
     smtp = smtplib.SMTP('smtp.gmail.com', 587)
 
@@ -11,20 +14,20 @@ def mail_sender(subject, msg):
     smtp.starttls()
 
     # smtp.login('메일 주소', '비밀번호')
-    smtp.login('kibeom0429@gmail.com', 'bolulxcmhbhmxunf')
+    smtp.login(email, key)
 
     # 메일 내용 입력
     msg = MIMEText(msg)
     # 메일 제목 입력
     msg['Subject'] = subject
 
-    smtp.sendmail('kibeom0429@gmail.com', 'kibeom0429@gmail.com', msg.as_string())
+    smtp.sendmail(email, email, msg.as_string())
 
     smtp.quit()
 
-def mail_reader(mail):
+def mail_reader(user, mail, key):
     imap = imaplib.IMAP4_SSL('imap.gmail.com')
-    imap.login(mail, 'bolulxcmhbhmxunf')
+    imap.login(mail, key)
     imap.select("INBOX")
 
     # 사서함의 모든 메일의 uid 정보 가져오기
@@ -64,11 +67,44 @@ def mail_reader(mail):
                 break
     else:
         body = email_message.get_payload(decode=True)
-
-    body = body.decode('utf-8')
-    return subject, body
-if __name__ == '__main__':
-    mail_sender('테스트', 'alarm_project')
-    subject, body = mail_reader('kibeom0429@gmail.com')
-    print(subject)
-    print(body)
+    try:
+        body = body.decode('utf-8')
+    except:
+        return False
+    subject = list(str(subject).split())
+    try:
+        ret = []
+        data = body.strip()
+        lis = list(subject[0].split('-'))
+        alarm_date = datetime.date(int(lis[0]), int(lis[1]), int(lis[2]))
+        lis = list(subject[1].split(':'))
+        alarm_time = datetime.time(int(lis[0]), int(lis[1]))
+        ret.extend([data, alarm_date, alarm_time])
+        if len(subject) > 2:
+            repeat_now = int(subject[2])
+            ret.append(repeat_now)
+        if len(subject) > 3:
+            repeat_week = int(subject[3])
+            ret.append(repeat_week)
+    except Exception as e:
+        print(False)
+        return False
+    if len(subject) <= 2:
+        repeat_now = 0
+    if len(subject) <= 3:
+        repeat_week = 0
+    alarm = list((Alarm.query.filter(Alarm.alarm_time == alarm_time).filter(Alarm.alarm_date == alarm_date)))
+    if len(alarm) == 0:
+        a = Alarm(repeat_now=repeat_now,
+            repeat_week=repeat_week,
+            alarm_date=alarm_date,
+            alarm_time=alarm_time,
+            data=data)
+        user = (User.query.filter(User.id == user.id))[0]
+        user.alarms.append(a)
+        session.commit()
+        print('success')
+        mail_sender(mail, key, 'Alarm is succesfully added', f'{alarm_time} {alarm_date} {repeat_now} {repeat_week} {data}')
+    else:
+        print('not unique')
+    #return subject, body

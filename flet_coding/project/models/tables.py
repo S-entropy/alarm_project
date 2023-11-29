@@ -10,6 +10,7 @@ class User(TimeStampedModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(80), nullable=False)
     email = Column(String(320), nullable=False, unique=True)
+    email_key = Column(String(1000), nullable=False)
     password = Column(String(320), nullable=False)
     is_admin = Column(Boolean, nullable=False)
 
