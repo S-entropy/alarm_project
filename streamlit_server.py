@@ -60,12 +60,10 @@ def mail_send(id):
     mail_sender(user.email, user.email_key, 'test', alarm.data)
 while True:
     alarm_check()
-
     users = (User.query.all())
     for user in users:
         mail_reader(user, user.email, user.email_key)
     for user in users:
         for alarm in user.alarms:
-            st.text(alarm.alarm_date)
             st.text(alarm.alarm_time)
     time.sleep(5)
