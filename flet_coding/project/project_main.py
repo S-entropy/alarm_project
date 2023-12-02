@@ -1,7 +1,6 @@
 import flet as ft
 from email_validator import validate_email, EmailNotValidError
-from flet_coding.project.models.tables import User, Alarm, Alarm_repeat
-from flet_coding.project.models.connect import session
+from flet_coding.project.models.connect import session,  User, Alarm, Alarm_repeat
 import datetime
 
 # users = (User.query \
@@ -76,12 +75,12 @@ class UserInfo(ft.UserControl):
         return ft.Row(controls=[t1, t2, t3, t4])
 
 class AlarmInfo(ft.UserControl):
-    def __init__(self, alarm):
+    def __init__(self, alarm, page):
         super().__init__()
         self.alarm = alarm
-
+        self.page = page
     def data_change(self, e):
-        alarm = (Alarm.query.filter(Alarm.user_id == self.alarm.user_id))
+        alarm = (Alarm.query.filter(Alarm.id == self.alarm.id))
         alarm = alarm[0]
         if e.control.label == '데이터':
             alarm.data = e.control.value
@@ -97,8 +96,15 @@ class AlarmInfo(ft.UserControl):
             lis = list(e.control.value.split(':')[:2])
             alarm.alarm_time = datetime.time(int(lis[0]), int(lis[1]))
         session.commit()
+
+    def delete_self(self, e):
+        alarm = (Alarm.query.filter(Alarm.id == self.alarm.id))
+        alarm = alarm[0]
+        session.delete(alarm)
+        session.commit()
+        self.page.remove(self)
     def build(self):
-        t0 = ft.Container(content=ft.Text(value=self.alarm.id), alignment=ft.alignment.center, width=50)
+        t0 = ft.TextButton(text="Delete", on_click=self.delete_self)
         t1 = ft.Container(content=ft.TextField(label='데이터', value=self.alarm.data, on_change=self.data_change), alignment=ft.alignment.center, width=750)
         t2 = ft.Container(content=ft.TextField(label='반복', value=str(int(self.alarm.repeat_now == 'true')), on_change=self.data_change), alignment=ft.alignment.center, width=50)
         t3 = ft.Container(content=ft.TextField(label='요일 반복', value=self.alarm.repeat_week, on_change=self.data_change), alignment=ft.alignment.center, width=100)
@@ -147,7 +153,7 @@ def main(page):
                 alarm_name = ft.Text(value=f'{user.name}\'s Alarm INFO')
                 alarms_contain = [user_name, col, alarm_name]
                 for alarm in alarms:
-                    alarms_contain.append(AlarmInfo(alarm))
+                    alarms_contain.append(AlarmInfo(alarm, page))
                 for i in alarms_contain:
                     page.add(i)
                 page.add(ft.Divider())

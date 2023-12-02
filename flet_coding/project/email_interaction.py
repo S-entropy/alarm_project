@@ -6,6 +6,7 @@ import datetime
 import time
 from flet_coding.project.models.tables import User, Alarm, Alarm_repeat
 from flet_coding.project.models.connect import session
+
 def mail_sender(email, key, subject, msg):
     # smtplib.SMTP('사용할 SMTP 서버의 URL', PORT)
     smtp = smtplib.SMTP('smtp.gmail.com', 587)

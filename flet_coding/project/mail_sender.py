@@ -4,6 +4,10 @@ import schedule
 import time
 import datetime
 from email_interaction import mail_sender, mail_reader
+import streamlit as st
+
+def alarm_deleter(alarm):
+    session.delete(alarm)
 
 # 스케쥴 모듈이 동작시킬 코드 : 현재 시간 출력
 def get_added_time(time, interval):
@@ -63,7 +67,7 @@ schedule.every(10).seconds.do(alarm_check)
 users = (User.query.all())
 for user in users:
     schedule.every(10).seconds.do(mail_reader, user, user.email, user.email_key)
-
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+if __name__ == '__main_':
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
