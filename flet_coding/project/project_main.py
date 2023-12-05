@@ -100,14 +100,17 @@ class AlarmInfo(ft.UserControl):
     def delete_self(self, e):
         alarm = (Alarm.query.filter(Alarm.id == self.alarm.id))
         alarm = alarm[0]
+        alarm_repeats = (Alarm_repeat.query.filter(Alarm_repeat.alarm_id == self.alarm.id))
+        for alarm_repeat in alarm_repeats:
+            session.delete(alarm_repeat)
         session.delete(alarm)
         session.commit()
         self.page.remove(self)
     def build(self):
         t0 = ft.TextButton(text="Delete", on_click=self.delete_self)
         t1 = ft.Container(content=ft.TextField(label='데이터', value=self.alarm.data, on_change=self.data_change), alignment=ft.alignment.center, width=750)
-        t2 = ft.Container(content=ft.TextField(label='반복', value=str(int(self.alarm.repeat_now == 'true')), on_change=self.data_change), alignment=ft.alignment.center, width=50)
-        t3 = ft.Container(content=ft.TextField(label='요일 반복', value=self.alarm.repeat_week, on_change=self.data_change), alignment=ft.alignment.center, width=100)
+        t2 = ft.Container(content=ft.TextField(label='반복', value=str(self.alarm.repeat_now)), alignment=ft.alignment.center, width=50)
+        t3 = ft.Container(content=ft.TextField(label='요일 반복', value=self.alarm.repeat_week), alignment=ft.alignment.center, width=100)
         t4 = ft.Container(content=ft.TextField(label='날짜', value=self.alarm.alarm_date, on_change=self.data_change), alignment=ft.alignment.center, width=150)
         t5 = ft.Container(content=ft.TextField(label='시간', value=str(self.alarm.alarm_time)[:5], on_change=self.data_change), alignment=ft.alignment.center, width=75)
         if self.alarm.repeat_now == 'true':

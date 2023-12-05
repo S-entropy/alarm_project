@@ -52,7 +52,35 @@ def alarm_check():
     for alarm in alarms:
         print(alarm.alarm_time)
         if now.strftime('%Y-%m-%d %H:%M') == alarm.alarm_date.strftime('%Y-%m-%d')+alarm.alarm_time.strftime(' %H:%M'):
+            if alarm.repeat_now:
+                alarm_repeat = alarm.alarm_repeat
+                alarm_repeat = alarm_repeat[0]
+                v = alarm_repeat.repeat_interval
+                v1 = v//60
+                v2 = v%60
+                dt = datetime.datetime(year=alarm.alarm_date.year, month=alarm.alarm_date.month, day=alarm.alarm_date.day,
+                                       hour=alarm.alarm_time.hour, minute=alarm.alarm_time.minute)
+                dt = dt + datetime.timedelta(hours=v1, minutes=v2)
+                alarm.alarm_date = datetime.date(dt.year, dt.month, dt.day)
+                alarm.alarm_time = datetime.time(dt.hour, dt.minute)
+            elif alarm.repeat_week:
+                dates = []
+                for i in range(7):
+                    dates.append(alarm.repeat_week % 2)
+                    alarm.repeat_week //= 2
+                dates = dates + dates
+                cur = datetime.datetime.today().weekday() + 1
+                while True:
+                    if dates[cur]:
+                        break
+                    else:
+                        cur+=1
+                delta = cur - datetime.datetime.today().weekday()
+                alarm.alarm_date = alarm.alarm_date + datetime.timedelta(days=delta)
+            else:
+                session.delete(alarm)
             mail_send(alarm.id)
+            session.commit()
 
 def mail_send(id):
     alarm = (Alarm.query.filter(Alarm.id == id))
@@ -67,7 +95,6 @@ schedule.every(10).seconds.do(alarm_check)
 users = (User.query.all())
 for user in users:
     schedule.every(10).seconds.do(mail_reader, user, user.email, user.email_key)
-if __name__ == '__main_':
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
