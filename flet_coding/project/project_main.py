@@ -109,7 +109,7 @@ class AlarmInfo(ft.UserControl):
     def build(self):
         t0 = ft.TextButton(text="Delete", on_click=self.delete_self)
         t1 = ft.Container(content=ft.TextField(label='데이터', value=self.alarm.data, on_change=self.data_change), alignment=ft.alignment.center, width=750)
-        t2 = ft.Container(content=ft.TextField(label='반복', value=str(self.alarm.repeat_now)), alignment=ft.alignment.center, width=50)
+        t2 = ft.Container(content=ft.TextField(label='반복', value=str(self.alarm.repeat_now)), alignment=ft.alignment.center, width=75)
         t3 = ft.Container(content=ft.TextField(label='요일 반복', value=self.alarm.repeat_week), alignment=ft.alignment.center, width=100)
         t4 = ft.Container(content=ft.TextField(label='날짜', value=self.alarm.alarm_date, on_change=self.data_change), alignment=ft.alignment.center, width=150)
         t5 = ft.Container(content=ft.TextField(label='시간', value=str(self.alarm.alarm_time)[:5], on_change=self.data_change), alignment=ft.alignment.center, width=75)

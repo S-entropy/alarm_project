@@ -65,9 +65,11 @@ def alarm_check():
                 alarm.alarm_time = datetime.time(dt.hour, dt.minute)
             elif alarm.repeat_week:
                 dates = []
+                v = alarm.repeat_week
                 for i in range(7):
-                    dates.append(alarm.repeat_week % 2)
-                    alarm.repeat_week //= 2
+                    dates.append(v % 10)
+                    v //= 10
+                dates.reverse()
                 dates = dates + dates
                 cur = datetime.datetime.today().weekday() + 1
                 while True:
@@ -86,7 +88,9 @@ def mail_send(id):
     alarm = (Alarm.query.filter(Alarm.id == id))
     alarm = alarm[0]
     user = (User.query.filter(User.id == alarm.user_id))[0]
-    mail_sender(user.email, user.email_key, 'test', alarm.data)
+    d = alarm.alarm_date
+    t = alarm.alarm_time
+    mail_sender(user.email, user.email_key, f'Check For alarm', alarm.data)
 
 alarms = (Alarm.query.all())
 schedule.every(10).seconds.do(alarm_check)

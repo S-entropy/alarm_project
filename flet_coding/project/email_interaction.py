@@ -112,7 +112,7 @@ def mail_reader(user, mail, key):
         session.commit()
         print('success')
         mail_sender(mail, key, 'Alarm has succesfully added',
-                    f'{alarm_time} {alarm_date} {repeat_now} {repeat_week} {data}')
+                    f'{alarm_date} {alarm_time} {repeat_now} {repeat_week:7} {data}')
     else:
         print('not unique')
     #return subject, body
